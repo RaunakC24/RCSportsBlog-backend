@@ -23,7 +23,7 @@
 
 </script>
 
-<h2 class="text-center py-3 text-2xl font-bold shadow-sm mx-auto w-full">NFL Posts</h2>
+<h2 class="bg-gradient-to-r from-blue-200 via-blue-300 via-40% to-blue-200 text-center py-3 mt-5 text-2xl font-bold shadow-sm mx-auto max-w-sm">NFL Posts</h2>
 <Sportpage sportsarticles={nflArticles}></Sportpage>
 
 <style>

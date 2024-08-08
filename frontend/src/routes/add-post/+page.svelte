@@ -2,6 +2,7 @@
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import { writable } from 'svelte/store';
+    import { fetchAuth } from '../../lib/api';
     import Cookies from 'js-cookie';
 
     let title = '';
@@ -36,28 +37,20 @@
     async function submit(event) {
         event.preventDefault();
         error.set('');
+        const url = 'http://127.0.0.1:8000/api/add_post/';
         try {
-            const url = 'http://127.0.0.1:8000/api/add_post/';
-            const accessToken = Cookies.get('accessToken');
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
-                body: JSON.stringify({title, description, content, category }),
-                credentials: 'include'
-            });
-            const data = await response.json();
+            const response = await fetchAuth(url, 'POST', { title, description, content, category });
             if (response.ok) {
                 goto('/');
             } else {
-                error.set(data.message || 'There was an error creating the post')
+                const data = await response.json();
+                error.set(data.message || 'There was an error creating the post');
             }
         } catch (err) {
-            error.set(data.message || 'Error');
+            error.set('Error creating the post');
         }
     }
+
 </script>
 
 <h2 class="text-4xl font-bold mb-6 mt-4 text-center">Add New Post</h2>

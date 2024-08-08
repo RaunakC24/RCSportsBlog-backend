@@ -11,7 +11,7 @@
 <style>
     .nav-bar {
         display: flex;
-        background-color: #7d99d3;
+        background: linear-gradient(to right, #c6dff0, #4889e9);
         padding: 20px;
                
         
@@ -21,6 +21,7 @@
         list-style: none;
         position: relative;
         padding: 0 20px;
+        
     }
     .nav-item:last-child::after{
         content:"";
@@ -46,13 +47,12 @@
         color: black;
         font-weight: bold;
         cursor: pointer;
-        background-color: #7d99d3;
         border: none;
         transition: background-color 0.3s ease;
         
     }
     .nav-item button:hover {
-        color: rgb(201, 222, 226);
+        color: rgb(51, 139, 240);
         transition: color 0.3s;
         transform: scale(1.05);
     }

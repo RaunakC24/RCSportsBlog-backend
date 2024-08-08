@@ -5,6 +5,7 @@
     import { writable } from 'svelte/store';
     import Cookies from 'js-cookie';
     import { isAuthenticated, user } from "../../../stores/auth";
+    import { fetchAuth } from '../../..//lib/api';
     
 
     let post = writable(null);
@@ -34,81 +35,73 @@
     }
 
     async function addComment() {
-        const url = 'http://127.0.0.1:8000/api/add_comment';
-        const accessToken = Cookies.get('accessToken');
-        const response = await fetch(`${url}/${data.props.post.id}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({ content: newComment})
-        });
-        const result = await response.json();
-        if (response.ok) {
-            const newAddCommentData = {
-                ...result.comment,
-                likes: 0,
-                dislikes: 0
-            };
-            comments.update(currentComments => [...currentComments, newAddCommentData]);
-            newComment = '';
-        } else {
-            console.error('Comment could not be added');
+        const url = `http://127.0.0.1:8000/api/add_comment/${data.props.post.id}/`;
+        try {
+            const response = await fetchAuth(url, 'POST', {content: newComment });
+            if (response.ok) {
+                const result = await response.json();
+                const newAddCommentData = {
+                    ...result.comment,
+                    likes: 0,
+                    dislikes: 0
+                };
+                comments.update(currentComments => [...currentComments, newAddCommentData]);
+                newComment = '';
+            } else {
+                console.error('Comment could not be added');
+            }
+        } catch (err) {
+            console.error('Comment could not be added:', err);
         }
+        
 
     }
 
     async function deleteComment(commentId) {
-        const url = 'http://127.0.0.1:8000/api/delete_comment';
-        const accessAToken = Cookies.get('accessToken');
-        const response = await fetch(`${url}/${commentId}/`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${accessAToken}`
+        const url = `http://127.0.0.1:8000/api/delete_comment/${commentId}/`;
+        try {
+            const response = await fetchAuth(url, 'DELETE')
+            if (response.ok) {
+                comments.update(currentComments => currentComments.filter(comment => comment.id !== commentId));
+            } else {
+                const result = response.json();
+                console.error('Could not delete comment', result.message);
             }
-        });
-        if (response.ok) {
-            comments.update(currentComments => currentComments.filter(comment => comment.id !== commentId));
-        } else {
-            const result = response.json();
-            console.error('Could not delete comment', result.message);
+        } catch (err) {
+            console.error('There was an error deleting the comment', err);
         }
 
     }
 
     async function addReply(commentId, replyContent) {
         if (!replyContent.trim()) return;
-        const url = 'http://127.0.0.1:8000/api/add_reply';
-        const accessToken = Cookies.get('accessToken');
-        const response = await fetch(`${url}/${commentId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({ content: replyContent})
-        });
-        const result = await response.json();
-        if (response.ok) {
-            comments.update(allComments => {
-                return allComments.map(comment => {
-                    if (comment.id === commentId) {
-                        const newReplyData = {
-                            ...result.reply,
-                            likes: 0,
-                            dislikes: 0
-                        };
-                        comment.replies = [...comment.replies, newReplyData];
-                        comment.newReply = '';
-                        comment.replying = false;
-                    }
-                    return comment;
+        const url = `http://127.0.0.1:8000/api/add_reply/${commentId}/`;
+        try {
+            const response = await fetchAuth(url, 'POST', { content: replyContent });
+            if (response.ok) {
+                const result = await response.json();
+                comments.update(allComments => {
+                    return allComments.map(comment => {
+                        if (comment.id === commentId) {
+                            const newReplyData = {
+                                ...result.reply,
+                                likes: 0,
+                                dislikes: 0
+                            };
+                            comment.replies = [...comment.replies, newReplyData];
+                            comment.newReply = '';
+                            comment.replying = false;
+                        }
+                        return comment;
+                    });
                 });
-            });
-        } else {
-            console.error('Could not add reply', result.errors);
+            } else {
+                console.error('Could not add reply');
+            }
+        } catch (err) {
+            console.error('Error with adding reply', err);
         }
+        
     }
 
     function replyToggle(comment) {
@@ -125,69 +118,60 @@
     }
 
     async function deleteReply(replyId, commentId) {
-        const url = 'http://127.0.0.1:8000/api/delete_reply';
-        const accessToken = Cookies.get('accessToken');
-        const response = await fetch(`${url}/${replyId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
+        const url = `http://127.0.0.1:8000/api/delete_reply/${replyId}/`;
+        try {
+            const response = await fetchAuth(url, 'DELETE');
+            if (response.ok) {
+                comments.update(allComments => {
+                    return allComments.map(comment => {
+                    if (comment.id === commentId) {
+                        comment.replies = comment.replies.filter(reply => reply.id !== replyId);
+                    }
+                    return comment;
+                    });      
+                });
+            } else { 
+                console.error('Could not delete reply');
             }
-        });
-        if (response.ok) {
-            comments.update(allComments => {
-                return allComments.map(comment => {
-                if (comment.id === commentId) {
-                    comment.replies = comment.replies.filter(reply => reply.id !== replyId);
-                }
-                return comment;
-                });      
-            });
-        } else { 
-            console.error('Could not delete reply');
+        } catch (err) {
+            console.error('Could not delete reply', err);
         }
+        
     }
 
     async function likeDislikeSwitch(type, id, isLike) {
-        const accessToken = Cookies.get('accessToken');
         const endpoint = isLike ? `like_${type}` : `dislike_${type}`;
-        const url = 'http://127.0.0.1:8000/api'
-        const response = await fetch(`${url}/${endpoint}/${id}/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+        const url = `http://127.0.0.1:8000/api/${endpoint}/${id}/`;
+        try {
+            const response = await fetchAuth(url, 'POST');
+            if (response.ok) {
+                const result = await response.json();
 
-        if (!response.ok) {
-        console.error('Failed to fetch from API');
-        return;
-        }
-
-        const result = await response.json();
-        console.log(`API response for ${isLike ? 'like' : 'dislike'}:`, result);
-
-        if (response.ok) {
-            comments.update(allComments => {
-                return allComments.map(comment => {
-                if (type === 'comment' && comment.id === id) {
-                    console.log('Updating likes/dislikes for comment:', comment);
-                    return {...comment, likes: result.likes_count, dislikes: result.dislikes_count};
-                }
-                if (type === 'reply') {
-                    comment.replies = comment.replies.map(reply => {
-                        if (reply.id === id) {
-                            console.log('Updating likes/dislikes for reply:', reply);
-                            return {...reply, likes: result.likes_count, dislikes: result.dislikes_count}
-                        }
-                        return reply;
+                comments.update(allComments => {
+                    return allComments.map(comment => {
+                    if (type === 'comment' && comment.id === id) {
+                        console.log('Updating likes/dislikes for comment:', comment);
+                        return {...comment, likes: result.likes_count, dislikes: result.dislikes_count};
+                    }
+                    if (type === 'reply') {
+                        comment.replies = comment.replies.map(reply => {
+                            if (reply.id === id) {
+                                console.log('Updating likes/dislikes for reply:', reply);
+                                return {...reply, likes: result.likes_count, dislikes: result.dislikes_count}
+                            }
+                            return reply;
+                        });
+                    }
+                    return comment;
                     });
-                }
-                return comment;
-                });
-            })    
-        } else {
-            console.error('There was an error with toggling the likes and dislikes');
+                })                
+            } else {
+                console.error('There was an error with toggling the likes and dislikes');
+            }
+        } catch (err) {
+            console.error('There was an error with liking/disliking', err);
         }
+        
     }
 
 </script>
@@ -231,7 +215,7 @@
                                     {#each comment.replies as reply}
                                         <li class="border-t border-gray-300 mt-2 pt-2 px-2 rounded-lg">
                                             <p class="text-black-700 text-md">{reply.content}</p>
-                                            <div class="text-gray-600 text-sm">Replied by: {reply.user.username}</div>
+                                            <div class="text-gray-800 text-sm">Replied by: {reply.user.username}</div>
                                         </li>
                                         {#if $isAuthenticated}
                                             <button class="text-xs bg-blue-400 text-white hover:bg-blue-600 px-2 py-1 text-xs rounded transition duration-300 ease-in-out" on:click={() => likeDislikeSwitch('reply', reply.id, true)}>Likes ({reply.likes})</button>

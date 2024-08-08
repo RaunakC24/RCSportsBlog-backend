@@ -17,5 +17,7 @@
 <slot />
 
 <style>
-    
+    :global(body) {
+      background: linear-gradient(to right, #e5eff7, #bad8e7, #e5eff7);
+    }
   </style>

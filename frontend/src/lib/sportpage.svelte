@@ -27,7 +27,7 @@
         padding: 20px;
         margin: 10px; 
         width: calc(30% - 40px);
-        background-color: #fff;
+        background-color: #e6edf0;
     }
     .article-card h3 {
         font-size: 20px;

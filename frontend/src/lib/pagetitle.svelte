@@ -89,7 +89,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: #7d99d3;
+        background: linear-gradient(to right, #c6dff0, #4889e9);
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
         padding: 10px 20px;
         
@@ -98,7 +98,6 @@
     .logo-button {
         font-size: 40px;
         color: black;
-        background-color: #7d99d3;
         font-family:'Lucida Sans';
         padding: 10px 20px;
         margin: 5px;
@@ -112,7 +111,7 @@
         }
 
     .logo-button:hover {
-        color: rgb(201, 222, 226);
+        color: rgb(51, 139, 240);
         transform: scale(1.02);
     }
     .authorization-button {
