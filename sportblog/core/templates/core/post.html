@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset ="UTF-8">
+        <title>{{ post.title }}</title>
+    </head>
+    <body>
+        <nav>
+            {% if user.is_authenticated %}
+                <p>Welcome, {{ user.username }}!</p>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            {% endif %}
+        </nav>
+        <h1>{{post.title }}</h1>
+        <p>{{post.content }}</p>
+        <p>Author: {{ post.author }}</p>
+        <p>Published on: {{ post.publish }}</p>
+        <hr>
+        <h2>Comments</h2>
+        {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'add_comment' post.id %}">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit"> Add Comment</button>
+            </form>
+        {% else %}
+            <p>You must be logged in to add a comment</p>
+        {% endif %}
+        <ul>
+            {% for comment in comments %}
+                <li>
+                    <p> {{comment.content }} - {{comment.user}}</p>
+                    <p>Likes: {{ comment.likes.count }} Dislikes: {{ comment.dislikes.count }} </p>
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'like_comment' comment.id %}">
+                            {% csrf_token %}
+                            <button type="submit">Like</button>
+                        </form>
+                        <form method=""POST action="{% url 'dislike_comment' comment.id %}">
+                            {% csrf_token %}
+                            <button type="submit">Dislike</button>
+                        </form>
+                        <form method="POST" action="{% url 'delete_comment' comment.id %}">
+                            {% csrf_token %}
+                            <button type="submit">Delete Comment</button>
+                        </form>
+                    {% endif %}
+                    <h3>Replies</h3>
+                    <ul>
+                        {% for reply in comment.replies.all %}
+                        <li>
+                            <p>{{reply.content }} - {{reply.user }}</p>
+                            <p>Likes: {{reply.likes.count }} Dislikes: {{reply.dislikes.count}} </p>
+                            {% if user.is_authenticated %}
+                            <form method="POST" action="{% url 'like_reply' reply.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Like</button>
+                            </form>
+                            <form method="POST" action="{% url 'dislike_reply' reply.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Dislike</button>
+                            </form>
+                            <form method="POST" action="{% url 'delete_reply' reply.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Delete Reply</button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'add_reply' comment.id %}">
+                            {% csrf_token %}
+                            {{ reply_form.as_p }}
+                            <button type="submit">Reply</button>
+                        </form>
+                    {% else %}
+                        <p>You must be logged in to reply.</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
