@@ -32,7 +32,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['rc-sports-blog.vercel.app', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['rc-sports-blog.vercel.app', '127.0.0.1', 'localhost', 'raunak-sport-blog.herokuapp.com']
 
 
 # Application definition
@@ -160,10 +160,10 @@ SIMPLE_JWT = {
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    'https://rc-sports-blog.vercel.app', 'http://localhost:5173',
+    'https://rc-sports-blog.vercel.app', 'http://localhost:5173', 'https://raunak-sport-blog.herokuapp.com',
 ]
 CSRF_TRUSTED_ORIGINS = [
-    'https://rc-sports-blog.vercel.app', 'http://localhost:5173',
+    'https://rc-sports-blog.vercel.app', 'http://localhost:5173', 'https://raunak-sport-blog.herokuapp.com'
 ]
 
 LOGIN_REDIRECT_URL = 'home'
