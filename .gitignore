@@ -1,6 +1,24 @@
+# Ignore virtual environment
 venv/
+
+# Ignore environment variables file
 .env
+
+# Ignore Python cache files
 __pycache__/
-db.sqlite3
-db.json
+*.py[cod]
+*$py.class
+
+# Ignore SQLite database files
+*.sqlite3
+*.json
+
+# Ignore frontend directory
 frontend/
+
+# Ignore unnecessary files or logs
+*.log
+*.tmp
+
+# Ignore node_modules if present in any folder
+node_modules/
